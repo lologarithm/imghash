@@ -11,7 +11,7 @@ import (
 )
 
 func TestHash(t *testing.T) {
-	imgFile, err := os.Open("0Uf6biU.jpg")
+	imgFile, err := os.Open("examples/0Uf6biU.jpg")
 	if err != nil {
 		log.Printf("Failed to read image: %s", err)
 		t.FailNow()
@@ -74,7 +74,7 @@ func TestCompareImages(t *testing.T) {
 }
 
 func compareImageFiles(file1, file2 string, t *testing.T) int {
-	imgFile1, err := os.Open(file1)
+	imgFile1, err := os.Open("examples/" + file1)
 	if err != nil {
 		log.Printf("Failed to read image: %s", err)
 		t.FailNow()
@@ -87,7 +87,7 @@ func compareImageFiles(file1, file2 string, t *testing.T) int {
 		t.FailNow()
 	}
 
-	imgFile2, err := os.Open(file2)
+	imgFile2, err := os.Open("examples/" + file2)
 	if err != nil {
 		log.Printf("Failed to read image: %s", err)
 		t.FailNow()
@@ -104,7 +104,7 @@ func compareImageFiles(file1, file2 string, t *testing.T) int {
 }
 
 func TestQualityImages(t *testing.T) {
-	imgFile, err := os.Open("1_Connie.jpg")
+	imgFile, err := os.Open("examples/1_Connie.jpg")
 	if err != nil {
 		log.Printf("Failed to read image: %s", err)
 		t.FailNow()
