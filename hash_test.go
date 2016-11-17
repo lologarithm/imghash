@@ -4,42 +4,52 @@ import (
 	"bytes"
 	"image"
 	"image/jpeg"
-	"log"
 	"os"
 	"testing"
-	"time"
 )
+
+func BenchmarkHash(b *testing.B) {
+	imgFile, err := os.Open("examples/0Uf6biU.jpg")
+	if err != nil {
+		b.Logf("Failed to read image: %s", err)
+		b.FailNow()
+	}
+	defer imgFile.Close()
+
+	src, err := jpeg.Decode(imgFile)
+	if err != nil {
+		b.Logf("Failed to decode image: %s", err)
+		b.FailNow()
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		GetHash(src)
+	}
+}
 
 func TestHash(t *testing.T) {
 	imgFile, err := os.Open("examples/0Uf6biU.jpg")
 	if err != nil {
-		log.Printf("Failed to read image: %s", err)
+		t.Logf("Failed to read image: %s", err)
 		t.FailNow()
 	}
 	defer imgFile.Close()
 
 	src, err := jpeg.Decode(imgFile)
 	if err != nil {
-		log.Printf("Failed to decode image: %s", err)
+		t.Logf("Failed to decode image: %s", err)
 		t.FailNow()
 	}
 	hash := GetHash(src)
-	if hash != 35747317780873727 {
-		log.Printf("Incorrect hash created: Expected: %d, Actual: %d", 35747317780873727, hash)
+	if hash != 5938607115371940781 {
+		t.Logf("Incorrect hash created: Expected: %d, Actual: %d", 5938607115371940781, hash)
 		t.FailNow()
 	}
 }
 
 func CompareImages(img1 image.Image, img2 image.Image) int {
-	h1t1 := time.Now()
 	h1 := GetHash(img1)
-	h1t2 := time.Now()
-
-	h2t1 := time.Now()
 	h2 := GetHash(img2)
-	h2t2 := time.Now()
-
-	log.Printf("Hasht1: %d, Hasht2: %d", h1t2.Sub(h1t1).Nanoseconds()/int64(time.Millisecond), h2t2.Sub(h2t1).Nanoseconds()/int64(time.Millisecond))
 	// fmt.Printf("\nh1: %064b\nh2: %064b", h1, h2)
 	hxor := h1 ^ h2
 	// fmt.Printf("\nBA: %064b\n", hxor)
@@ -58,9 +68,9 @@ func TestCompareImages(t *testing.T) {
 		file2 string
 		diff  int
 	}{
-		{"0Uf6biU.jpg", "1_Connie.jpg", 34},
-		{"1_Connie_scaled.jpg", "1_Connie.jpg", 0},
-		{"1_Connie_cropped.jpg", "1_Connie.jpg", 13},
+		{"0Uf6biU.jpg", "1_Connie.jpg", 37},
+		{"1_Connie_scaled.jpg", "1_Connie.jpg", 2},
+		{"1_Connie_cropped.jpg", "1_Connie.jpg", 11},
 		{"1_Connie_dim.jpg", "1_Connie.jpg", 0},
 		{"1_Connie_bright.jpg", "1_Connie.jpg", 0},
 	}
@@ -68,7 +78,8 @@ func TestCompareImages(t *testing.T) {
 	for _, pair := range imgPairs {
 		diff := compareImageFiles(pair.file1, pair.file2, t)
 		if diff != pair.diff {
-			log.Printf("Images are %d bits different but expected: %d", diff, pair.diff)
+			t.Logf("Images (%s,%s) are %d bits different but expected: %d", pair.file1, pair.file2, diff, pair.diff)
+			t.FailNow()
 		}
 	}
 }
@@ -76,27 +87,27 @@ func TestCompareImages(t *testing.T) {
 func compareImageFiles(file1, file2 string, t *testing.T) int {
 	imgFile1, err := os.Open("examples/" + file1)
 	if err != nil {
-		log.Printf("Failed to read image: %s", err)
+		t.Logf("Failed to read image: %s", err)
 		t.FailNow()
 	}
 	defer imgFile1.Close()
 
 	src1, err := jpeg.Decode(imgFile1)
 	if err != nil {
-		log.Printf("Failed to decode image: %s", err)
+		t.Logf("Failed to decode image: %s", err)
 		t.FailNow()
 	}
 
 	imgFile2, err := os.Open("examples/" + file2)
 	if err != nil {
-		log.Printf("Failed to read image: %s", err)
+		t.Logf("Failed to read image: %s", err)
 		t.FailNow()
 	}
 	defer imgFile2.Close()
 
 	src2, err := jpeg.Decode(imgFile2)
 	if err != nil {
-		log.Printf("Failed to decode image: %s", err)
+		t.Logf("Failed to decode image: %s", err)
 		t.FailNow()
 	}
 	diff := CompareImages(src1, src2)
@@ -106,14 +117,14 @@ func compareImageFiles(file1, file2 string, t *testing.T) int {
 func TestQualityImages(t *testing.T) {
 	imgFile, err := os.Open("examples/1_Connie.jpg")
 	if err != nil {
-		log.Printf("Failed to read image: %s", err)
+		t.Logf("Failed to read image: %s", err)
 		t.FailNow()
 	}
 	defer imgFile.Close()
 
 	src2, err := jpeg.Decode(imgFile)
 	if err != nil {
-		log.Printf("Failed to decode image: %s", err)
+		t.Logf("Failed to decode image: %s", err)
 		t.FailNow()
 	}
 
@@ -121,7 +132,7 @@ func TestQualityImages(t *testing.T) {
 
 	diff := CompareImages(src1, src2)
 	if diff != 0 {
-		log.Printf("Found diff between same image with diff quality: Expected: %d, Actual: %d", 0, diff)
+		t.Logf("Found diff between same image with diff quality: Expected: %d, Actual: %d", 0, diff)
 	}
 }
 
